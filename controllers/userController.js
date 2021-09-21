@@ -3,6 +3,11 @@ const { isCorrectPw, encrypt } = require('../middlewares/bcrypt')
 const { generateToken, getUserData } = require('../middlewares/jwt')
 
 class UserController{
+    static async getUsers (req, res) {
+      const users = await User.findAll();
+      res.status(200).json(users)
+    }
+
     static async loginUser(req, res, next){
         const username = req.body.username;
         const password = encrypt(req.body.password);
@@ -20,32 +25,19 @@ class UserController{
         }
     }
     static async register(req, res, next) {
-      let statusCode;
-      let token = req.params.token
-      let userData = getUserData(token)
-      const username = req.body.username
-      const password = req.body.password
-      const objUser = { username, password }
-      User.register(objUser)
-        .then(user => {
-          if (user) {
-            statusCode = 201;
-            let output = {
-              statusCode, userCreated: user
-            }
-            res.status(201).json(output)
-          }
-        })
-        .catch(err => {
-          next(err)
-        })
-    } 
-  
-    static async getAll(req, res) {
-      let token = req.headers.token;
-      let userData = getUserData(token)
-      const users = await User.findAll();
-      res.status(200).json(users)
-    }
+      let usernameUser = req.body.username;
+        let passwordUser = encrypt(req.body.password);
+        let genderUser = req.body.gender;
+
+        let objUser = {
+            username: usernameUser,
+            password: passwordUser,
+            gender: genderUser
+        }
+        const user = await User.create(objUser);
+        if(user){
+            res.status(200).json({ message: "Success"}, user);
+        }
+      }
 }
 module.exports = UserController

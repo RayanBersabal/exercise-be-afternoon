@@ -32,14 +32,14 @@ class TaskController{
        }
     }
     static async updateTask (req, res){
-        let taskId = req.params.id
-        let task = req.body.taskname
-        let taskstatus = req.body.status
-        let ObjTask = {
-            taskname: task,
-            status: taskstatus
-        }
-        const tasks = await Task.update(ObjTask, { where: {id:taskId}})
+        const { id } = getUserData(req.headers.token)
+        const { id: taskId } = req.params
+        const update = await Task.update({
+            status : "done"
+        },
+        {
+            where:{id: taskId }
+        });
        
        if(tasks){
            res.status(200).json(tasks)
@@ -48,17 +48,12 @@ class TaskController{
        }
     }
     static async deleteTask (req, res){
-        let taskId = req.params.id
-        const deletedTask = await Task.findByPk(taskId)
-        if (deletedTask) {
-            const tasks = await Task.destroy(ObjTask, { where: {id:taskId}})
-        }
-       
-       if(tasks){
-           res.status(200).json(tasks)
-       }else{
-        res.status(404).json({"message": "task not deleted"})
-       }
+        const { id, gender } = getUserData(req.headers.token)
+        const { id: taskId } = req.params
+
+        if (gender !== 'female') res.status(403).json({ message: "forbidden access to this endpoint"});
+        const task = await Task.destroy({where:{id: taskId }})
+        res.status(200).json("success")
     }
 
 }
